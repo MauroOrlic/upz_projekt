@@ -1,14 +1,10 @@
-from math import isclose
-from pathlib import Path
-
-import pytest
 from networkx import is_weighted, is_directed
 
 from paths import raw_openflights, raw_power, raw_roadnet_ca, \
     raw_roadnet_pa, raw_usair97, processed_openflights, \
     processed_power, processed_roadmap_pa, processed_roadnet_ca, \
     processed_usair97
-from utils import load_raw, load_graphml, dump_graphml, GraphMeasures
+from utils import load_raw, dump_graphml
 
 
 class TestGraphIO:
@@ -81,28 +77,3 @@ class TestGraphIO:
         assert graph.has_edge('321', '163') is False
         assert graph.has_edge('230', '168') is False
         dump_graphml(graph, processed_usair97)
-
-
-class TestGraphProperties:
-
-    @pytest.mark.parametrize('graph_path, expected', [
-        (processed_openflights, 2.9e3),
-        (processed_power, 4.9e3),
-        (processed_roadnet_ca, 2e6),
-        (processed_roadmap_pa, 1.1e6),
-        (processed_usair97, 332)
-    ])
-    def test_node_count(self, graph_path: Path, expected: int):
-        measures = GraphMeasures(load_graphml(Path(graph_path)))
-        assert isclose(measures.node_count, expected, rel_tol=0.1)
-
-    @pytest.mark.parametrize('graph_path, expected', [
-        (processed_openflights, 30.5e3),
-        (processed_power, 6.6e3),
-        (processed_roadnet_ca, 2.8e6),
-        (processed_roadmap_pa, 1.5e6),
-        (processed_usair97, 2.1e3)
-    ])
-    def test_edge_count(self, graph_path: Path, expected: int):
-        measures = GraphMeasures(load_graphml(graph_path))
-        assert isclose(measures.connection_count, expected, rel_tol=0.1)

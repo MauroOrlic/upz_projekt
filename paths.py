@@ -1,15 +1,19 @@
 from pathlib import Path
-raw = Path('raw_data/')
-raw_openflights = Path(raw / 'inf-openflights.edges')
-raw_power = Path(raw / 'inf-power.mtx')
-raw_roadnet_ca = Path(raw / 'inf-roadNet-CA.mtx')
-raw_roadnet_pa = Path(raw / 'inf-roadNet-PA.mtx')
-raw_usair97 = Path(raw / 'inf-USAir97.mtx')
+from os import environ
+env_working_dir = 'WORKING_DIR_UPZ_PROJEKT'
+working_dir = Path(environ[env_working_dir])
 
-processed = Path('processed_data/')
+raw = working_dir / 'raw_data/'
+raw_openflights = raw / 'inf-openflights.edges'
+raw_power = raw / 'inf-power.mtx'
+raw_roadnet_ca = raw / 'inf-roadNet-CA.mtx'
+raw_roadnet_pa = raw / 'inf-roadNet-PA.mtx'
+raw_usair97 = raw / 'inf-USAir97.mtx'
+
+processed = working_dir / 'processed_data/'
 suffix_graphml = '.graphml'
-processed_openflights = Path(processed / raw_openflights.stem).with_suffix(suffix_graphml)
-processed_power = Path(processed / raw_power.stem).with_suffix(suffix_graphml)
-processed_roadnet_ca = Path(processed / raw_roadnet_ca.stem).with_suffix(suffix_graphml)
-processed_roadmap_pa = Path(processed / raw_roadnet_pa.stem).with_suffix(suffix_graphml)
-processed_usair97 = Path(processed / raw_usair97.stem).with_suffix(suffix_graphml)
+processed_openflights = processed / f"{raw_openflights.stem}{suffix_graphml}"
+processed_power = processed / f"{raw_power.stem}{suffix_graphml}"
+processed_roadnet_ca = processed / f"{raw_roadnet_ca.stem}{suffix_graphml}"
+processed_roadmap_pa = processed / f"{raw_roadnet_pa.stem}{suffix_graphml}"
+processed_usair97 = processed / f"{raw_usair97.stem}{suffix_graphml}"
