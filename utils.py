@@ -1,16 +1,14 @@
 from pathlib import Path
-from scipy.io import mmread
-from scipy.sparse.coo import coo_matrix
-from mtx import read_mtx
+from mtx import read_mtx, read_edges
 from networkx import Graph, DiGraph, \
-    write_graphml, read_graphml, from_scipy_sparse_matrix, read_edgelist, \
+    write_graphml, read_graphml, \
     is_weighted, \
     average_shortest_path_length, density, diameter, eccentricity, clustering, degree_assortativity_coefficient, number_connected_components, connected_components
 from typing import Union, Optional, Tuple
 from statistics import mean
 
 
-def load_raw(path: Path) -> Graph:
+def load_raw(path: Path) -> Union[Graph, DiGraph]:
     '''
     graph = Graph(name=path.stem)
     with path.open('r') as file:
@@ -27,7 +25,7 @@ def load_raw(path: Path) -> Graph:
     if path.suffix == '.mtx':
         graph = read_mtx(path.as_posix())
     elif path.suffix == '.edges':
-        graph = read_edgelist(path.as_posix(), comments='%', nodetype=int, delimiter=' ')
+        graph = read_edges(path.as_posix(), comments='%')
     else:
         raise ValueError("Usupported format.")
     graph.name = path.stem
@@ -35,6 +33,7 @@ def load_raw(path: Path) -> Graph:
 
 
 def dump_graphml(graph: Graph, path: Path):
+    path = Path(path.parent / path.stem).with_suffix('.graphml')
     with path.open('wb') as file:
         write_graphml(graph, file)
 
@@ -72,7 +71,10 @@ class GraphMeasures:
 
     @property
     def connection_count(self) -> Union[int, Tuple[int, int]]:
-        return self.graph.number_of_edges()
+        if self.directed:
+            return len(self.graph.in_edges)
+        else:
+            return self.graph.number_of_edges()
 
     @property
     def avg_connection_count(self) -> Union[float, Tuple[float, float]]:

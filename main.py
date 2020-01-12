@@ -1,28 +1,37 @@
-from utils import load_raw, dump_graphml, load_graphml
-from pathlib import Path
+from utils import load_raw, dump_graphml
+
+from paths import raw_openflights, raw_power, raw_roadnet_ca, \
+    raw_roadnet_pa, raw_usair97, processed_openflights, \
+    processed_power, processed_roadmap_pa, processed_roadnet_ca, \
+    processed_usair97
 
 
-path_raw_power = Path('raw_data/inf-power/inf-power.mtx')
-path_raw_openflights= Path('raw_data/inf-openflights/inf-openflights.edges')
-path_raw_roadnet_ca = Path('raw_data/inf-roadNet-CA/inf-roadNet-CA.mtx')
-path_raw_roadnet_pa = Path('raw_data/inf-roadNet-PA/inf-roadNet-PA.mtx')
-path_raw_usair97 = Path('raw_data/inf-USAir97/inf-USAir97.mtx')
-
-paths_raw = [
-    path_raw_power,
-    path_raw_openflights,
-    path_raw_roadnet_ca,
-    path_raw_roadnet_pa,
-    path_raw_usair97
+paths = [
+    (raw_openflights, processed_openflights),
+    (raw_power, processed_power),
+    (raw_roadnet_ca, processed_roadnet_ca),
+    (raw_roadnet_pa, processed_roadmap_pa),
+    (raw_usair97, processed_usair97)
 ]
-for path in paths_raw:
-    graph = load_raw(path)
-    processed_path = Path(f"processed_data/{path.stem}.graphml")
-    dump_graphml(graph, processed_path)
+RAW = 'raw'
+PROCESSED = 'procesed'
+GRAPH = 'graph'
+graphs = {
+    graph_paths[0].stem: {
+        RAW: graph_paths[0],
+        PROCESSED: graph_paths[1],
+        GRAPH: load_raw(graph_paths[0])}
+    for graph_paths in paths
+}
 
-path_processed_power = Path('processed_data/inf-power.graphml')
-path_processed_openflights = Path('processed_data/inf-openflights.graphml')
-path_processed_roadnet_ca = Path('processed_data/inf-roadNet-CA.graphml')
-path_processed_roadnet_pa = Path('processed_data/inf-roadNet-PA.graphml')
-path_processed_usair97 = Path('processed_data/inf-USAir97.graphml')
+for graph in graphs.values():
+    dump_graphml(graph[GRAPH], graph[PROCESSED])
+
+
+
+
+
+
+
+
 
