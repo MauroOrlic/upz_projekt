@@ -94,15 +94,12 @@ class GraphMeasures:
         return eccentricity(self.graph)
 
     @property
-    def global_efficiency(self) -> Optional[float]:
-        if not self.directed:
-            return global_efficiency(self.graph)
-        else:
-            return None
+    def global_efficiency(self) -> float:
+        return global_efficiency(self.graph)
 
     @property
     def global_clustering_coefficient(self) -> float:
-        return clustering(self.graph)
+        raise NotImplementedError
 
     @property
     def avg_clustering_coefficient(self) -> float:

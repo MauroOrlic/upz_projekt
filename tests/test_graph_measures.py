@@ -62,9 +62,9 @@ class TestGraphProperties:
         measures = GraphMeasures(load_graphml(graph_path))
         if measures.weighted:
             if measures.directed:
-                assert isinstance(measures.avg_strength, tuple)
-                assert isinstance(measures.avg_strength[0], float)
-                assert isinstance(measures.avg_strength[1], float)
+                avg_strength_in, avg_strength_out = measures.avg_strength
+                assert isinstance(avg_strength_in, float)
+                assert isinstance(avg_strength_out, float)
             else:
                 assert isinstance(measures.avg_strength, float)
         else:
@@ -80,6 +80,7 @@ class TestGraphProperties:
     ])
     def test_component_count(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.component_count, int)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -90,6 +91,9 @@ class TestGraphProperties:
     ])
     def test_largest_component_properties(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        node_count, edge_count = measures.largest_component_properties
+        assert isinstance(node_count, int)
+        assert isinstance(edge_count, int)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -100,6 +104,7 @@ class TestGraphProperties:
     ])
     def test_shortest_path_length(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.shortest_path_length, int)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -110,6 +115,7 @@ class TestGraphProperties:
     ])
     def test_diameter(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.diameter, int)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -120,6 +126,7 @@ class TestGraphProperties:
     ])
     def test_eccentricity(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.eccentricity, int)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -130,16 +137,22 @@ class TestGraphProperties:
     ])
     def test_global_efficiency(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        if measures.directed:
+            with pytest.raises(NotImplementedError):
+                measures.global_efficiency
+        else:
+            assert isinstance(measures.global_efficiency, float)
 
     @pytest.mark.parametrize('graph_path, expected', [
-        (processed_openflights, None),
-        (processed_power, None),
-        (processed_roadnet_ca, None),
-        (processed_roadmap_pa, None),
-        (processed_usair97, None)
+        (processed_openflights, 0.254926),
+        (processed_power, 0.103153),
+        (processed_roadnet_ca, 0.0603595),
+        (processed_roadmap_pa, 0.0593855),
+        (processed_usair97, 0.396392)
     ])
     def test_global_clustering_coefficient(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isclose(measures.avg_clustering_coefficient, expected, rel_tol=0.12)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, 0.396761),
@@ -147,7 +160,6 @@ class TestGraphProperties:
         (processed_roadnet_ca, 0.0464684),
         (processed_roadmap_pa, 0.046463),
         (processed_usair97, 0.625217)
-
     ])
     def test_avg_clustering_coefficient(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
@@ -194,6 +206,7 @@ class TestGraphProperties:
     ])
     def test_top10_central_betweenness(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert len(measures.top10_central_betweenness) == 10
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -204,6 +217,7 @@ class TestGraphProperties:
     ])
     def test_top10_central_closeness(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert len(measures.top10_central_closeness) == 10
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -214,6 +228,7 @@ class TestGraphProperties:
     ])
     def test_top10_central_table(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.top10_central_table, str)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -222,8 +237,9 @@ class TestGraphProperties:
         (processed_roadmap_pa, None),
         (processed_usair97, None)
     ])
-    def test_closeness_centrality(self, graph_path: Path, expected):
+    def test_avg_closeness_centrality(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.avg_closeness_centrality, float)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, None),
@@ -232,5 +248,6 @@ class TestGraphProperties:
         (processed_roadmap_pa, None),
         (processed_usair97, None)
     ])
-    def test_betweenness_centrality(self, graph_path: Path, expected):
+    def test_avg_betweenness_centrality(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
+        assert isinstance(measures.avg_betweenness_centrality, float)
