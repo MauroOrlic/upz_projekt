@@ -1,148 +1,305 @@
+from collections import Counter
 from heapq import nlargest
 from operator import itemgetter
 from statistics import mean
-from typing import Union, Optional, Tuple, Any
+from typing import Union, Tuple, Any, Dict
 
-import matplotlib.pyplot as plt
 from networkx import Graph, DiGraph
-from networkx import is_weighted, is_directed
-from networkx import degree_assortativity_coefficient
-from networkx import clustering, average_clustering
-from networkx import number_connected_components, connected_components
 from networkx import average_shortest_path_length, diameter, eccentricity
+from networkx import closeness_centrality, betweenness_centrality, degree_centrality
+from networkx import degree_assortativity_coefficient
 from networkx import global_efficiency
-from networkx import closeness_centrality, betweenness_centrality
+from networkx import is_weighted, is_directed, is_connected, is_weakly_connected
+from networkx import \
+    number_connected_components, connected_components, \
+    number_strongly_connected_components, strongly_connected_components, weakly_connected_components
+from networkx import transitivity, average_clustering
 
-from networkx import draw
-from networkx.algorithms import betweenness_centrality
+
+class MeasureError(AttributeError):
+    pass
 
 
 class GraphMeasures:
     def __init__(self, graph: Graph):
-        self.graph = graph
+        self._graph = graph
+        self._directed = is_directed(self._graph)
+        self._weighted = is_weighted(self._graph)
+        self._connected = None
+        self._weakly_connected = None
+        self._strongly_connected = None
+
+        self._node_count = None
+        self._edge_count = None
+        self._avg_edge_count = None
+        self._avg_strength = None
+        self._component_count = None
+        self._largest_component_measures = None
+        self._shortest_path_length = None
+        self._diameter = None
+        self._eccentricity = None
+        self._global_efficiency = None
+        self._global_clustering_coefficient = None
+        self._avg_clustering_coefficient = None
+        self._degree_assortativity = None
+        self._degree_distribution = None
+        self._top10_central_degree = None
+        self._top10_central_betweenness = None
+        self._top10_central_closeness = None
+        self._avg_closeness_centrality = None
+        self._avg_betweenness_centrality = None
 
     @property
     def graph(self) -> Union[Graph, DiGraph]:
         return self._graph
 
-    @graph.setter
-    def graph(self, graph: Union[Graph, DiGraph]):
-        self._graph = graph
-        self._directed = is_directed(self._graph)
-        self._weighted = is_weighted(self._graph)
-
     @property
     def directed(self) -> bool:
+        if self._directed is None:
+            self._directed = is_directed(self.graph)
+
         return self._directed
 
     @property
     def weighted(self) -> bool:
+        if self._weighted is None:
+            self._weighted = is_weighted(self.graph)
+
         return self._weighted
 
     @property
+    def connected(self) -> bool:
+        if self._connected is None:
+            if not self.directed:
+                self._connected = is_connected(self.graph)
+            else:
+                raise MeasureError('Directed graphs cannot be plainly connected, '
+                                   'use \'weakly_connected\' or \'strongly_connected\' instead.')
+        return self._connected
+
+    @property
+    def weakly_connected(self) -> bool:
+        if self._weakly_connected is None:
+            if self.directed:
+                self._weakly_connected = is_weakly_connected(self.graph)
+            else:
+                raise MeasureError('Undirected graphs cannot be weakly connected, '
+                                   'use \'connected\' instead.')
+
+        return self._weakly_connected
+
+    @property
+    def strongly_connected(self) -> bool:
+        if self._strongly_connected is None:
+            if self.directed:
+                self._strongly_connected = is_weakly_connected(self.graph)
+            else:
+                raise MeasureError('Undirected graphs cannot be strongly connected, '
+                                   'use \'connected\' instead.')
+
+        return self._strongly_connected
+
+    @property
     def node_count(self) -> int:
-        return self.graph.number_of_nodes()
+        if self._node_count is None:
+            self._node_count = self.graph.number_of_nodes()
+        return self._node_count
 
     @property
     def edge_count(self) -> Union[int, Tuple[int, int]]:
-        if self.directed:
-            return len(self.graph.in_edges)
-        else:
-            return self.graph.number_of_edges()
+        if self._edge_count is None:
+            if self.directed:
+                self._edge_count = len(self.graph.in_edges)
+            else:
+                self._edge_count = self.graph.number_of_edges()
+
+        return self._edge_count
 
     @property
     def avg_edge_count(self) -> Union[float, Tuple[float, float]]:
-        if self.directed:
-            return (
-                mean([degree[1] for degree in self.graph.in_degree()]),
-                mean([degree[1] for degree in self.graph.out_degree()])
-            )
-        else:
-            return mean([degree[1] for degree in self.graph.degree()])
+        if self._avg_edge_count is None:
+            if self.directed:
+                self._avg_edge_count = (
+                    mean([degree[1] for degree in self.graph.in_degree()]),
+                    mean([degree[1] for degree in self.graph.out_degree()])
+                )
+            else:
+                self._avg_edge_count = mean([degree[1] for degree in self.graph.degree()])
+
+        return self._avg_edge_count
 
     @property
     def avg_strength(self) -> Union[float, Tuple[float, float]]:
-        if self.weighted:
-            if self.directed:
-                return \
-                    (mean(degree for degree in dict(self.graph.in_degree(weight='weight')).values()),
-                     mean(degree for degree in dict(self.graph.out_degree(weight='weight')).values()))
+        if self._avg_strength is None:
+            if self.weighted:
+                if self.directed:
+                    self._avg_strength = \
+                        (mean(degree for degree in dict(self.graph.in_degree(weight='weight')).values()),
+                         mean(degree for degree in dict(self.graph.out_degree(weight='weight')).values()))
+                else:
+                    self._avg_strength = mean(degree for degree in dict(self.graph.degree(weight='weight')).values())
             else:
-                return mean(degree for degree in dict(self.graph.degree(weight='weight')).values())
-        else:
-            raise ValueError('Unweighted graphs cannot have strength.')
+                raise MeasureError('Unweighted graphs cannot have strength.')
+        return self._avg_strength
 
     @property
     def component_count(self) -> int:
-        return number_connected_components(self.graph)
+        if self._component_count is None:
+            if self.directed:
+                self._component_count = number_strongly_connected_components(self.graph)
+            else:
+                self._component_count = number_connected_components(self.graph)
+
+        return self._component_count
 
     @property
-    def largest_component_properties(self) -> Tuple[int, int]:
-        largest_component: Graph = max(connected_components(self.graph), key=len, reverse=True)
-        return largest_component.number_of_nodes(), largest_component.number_of_edges()
+    def largest_component_measures(self) -> 'GraphMeasures':
+        if self._largest_component_measures is None:
+            if self.directed:
+                if self.strongly_connected:
+                    return self
+
+                largest_component: DiGraph = self.graph.subgraph(
+                    max(strongly_connected_components(self.graph), key=len)
+                ).copy()
+            else:
+                if self.connected:
+                    return self
+                largest_component: Graph = self.graph.subgraph(
+                    max(connected_components(self.graph), key=len)
+                ).copy()
+
+            self._largest_component_measures = GraphMeasures(largest_component)
+
+        return self._largest_component_measures
 
     @property
     def shortest_path_length(self):
-        return average_shortest_path_length(self.graph)
+        if self._shortest_path_length is None:
+            if self.directed:
+                largest_component: DiGraph = self.graph.subgraph(
+                    max(weakly_connected_components(self.graph), key=len)
+                ).copy()
+            else:
+                largest_component: Graph = self.graph.subgraph(
+                    max(connected_components(self.graph), key=len)
+                ).copy()
+            self._shortest_path_length = average_shortest_path_length(largest_component)
+
+        return self._shortest_path_length
 
     @property
     def diameter(self) -> int:
-        return diameter(self.graph)
+        if self._diameter is None:
+            if self.directed:
+                largest_component: DiGraph = self.graph.subgraph(
+                    max(strongly_connected_components(self.graph), key=len)
+                ).copy()
+            else:
+                largest_component: Graph = self.graph.subgraph(
+                    max(connected_components(self.graph), key=len)
+                ).copy()
+            self._diameter = diameter(largest_component)
+
+        return self._diameter
 
     @property
-    def eccentricity(self) -> dict:
-        return eccentricity(self.graph)
+    def eccentricity(self) -> Union[int, float]:
+        if self._eccentricity is None:
+            if self.directed:
+                largest_component: DiGraph = self.graph.subgraph(
+                    max(strongly_connected_components(self.graph), key=len)
+                ).copy()
+            else:
+                largest_component: Graph = self.graph.subgraph(
+                    max(connected_components(self.graph), key=len)
+                ).copy()
+
+            self._eccentricity = max(eccentricity(largest_component).values())
+
+        return self._eccentricity
 
     @property
     def global_efficiency(self) -> float:
-        return global_efficiency(self.graph)
+        if self._global_efficiency is None:
+            self._global_efficiency = global_efficiency(self.graph)
+
+        return self._global_efficiency
 
     @property
     def global_clustering_coefficient(self) -> float:
-        raise NotImplementedError
+        if self._global_clustering_coefficient is None:
+            self._global_clustering_coefficient = transitivity(self.graph)
+
+        return self._global_clustering_coefficient
 
     @property
     def avg_clustering_coefficient(self) -> float:
-        return average_clustering(self.graph)
+        if self._avg_clustering_coefficient is None:
+            self._avg_clustering_coefficient = average_clustering(self.graph)
+
+        return self._avg_clustering_coefficient
 
     @property
     def degree_assortativity(self) -> float:
-        return degree_assortativity_coefficient(self.graph)
+        if self._degree_assortativity is None:
+            self._degree_assortativity = degree_assortativity_coefficient(self.graph)
 
-    def draw_degree_distribution_diagram(self):
-        args = []
-        kwargs = {}
-        if self.directed:
-            if self.weighted:
-                pass
-        draw(self.graph, *args, **kwargs)
-        plt.savefig(f"{self.graph.name}.png", format='PNG')
+        return self._degree_assortativity
 
+    @property
+    def degree_distribution(self) -> Union[Dict[int, int], Tuple[Dict[int, int], Dict[int, int]]]:
+        if self._degree_distribution is None:
+            if self.directed:
+                distribution = (
+                    dict(Counter(sorted([degree for node, degree in self.graph.in_degree()]))),
+                    dict(Counter(sorted([degree for node, degree in self.graph.out_degree()])))
+                )
+            else:
+                distribution = \
+                    dict(Counter(sorted([degree for node, degree in self.graph.degree()])))
+
+            self._degree_distribution = distribution
+
+        return self._degree_distribution
 
     @property
     def top10_central_degree(self) -> Tuple[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]:
-        return nlargest(10, self.graph.degree, key=itemgetter(1))
+        if self._top10_central_degree is None:
+            dc = degree_centrality(self.graph)
+            self._top10_central_degree = nlargest(10, dc.items(), key=itemgetter(1))
+
+        return self._top10_central_degree
 
     @property
     def top10_central_betweenness(self) -> Tuple[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]:
-        bc = betweenness_centrality(self.graph)
-        return nlargest(10, bc.keys(), key=itemgetter)
+        if self._top10_central_betweenness is None:
+            bc = betweenness_centrality(self.graph)
+            self._top10_central_betweenness = nlargest(10, bc.items(), key=itemgetter(1))
+
+        return self._top10_central_betweenness
 
     @property
     def top10_central_closeness(self) -> Tuple[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]:
-        pass
+        if self._top10_central_closeness is None:
+            cc = closeness_centrality(self.graph)
+            self._top10_central_closeness = nlargest(10, cc.items(), key=itemgetter(1))
+
+        return self._top10_central_closeness
 
     @property
-    def top10_central_table(self) -> str:
-        pass
+    def avg_closeness_centrality(self) -> float:
+        if self._avg_closeness_centrality is None:
+            self._avg_closeness_centrality = mean([centrality for centrality in closeness_centrality(self.graph).values()])
 
-    @property
-    def avg_closeness_centrality(self):
-        pass
+        return self._avg_closeness_centrality
 
     @property
     def avg_betweenness_centrality(self):
-        pass
+        if self._avg_betweenness_centrality is None:
+            self._avg_betweenness_centrality = mean([centrality for centrality in betweenness_centrality(self.graph).values()])
+
+        return self._avg_betweenness_centrality
 
 
 
