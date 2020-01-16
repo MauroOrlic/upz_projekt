@@ -48,7 +48,6 @@ class TestGraphProperties:
         (processed_roadnet_ca, None),
         (processed_roadmap_pa, None),
         (processed_usair97, None)
-
     ], ids=ids)
     def test_basic_measures(self, graph_path: Path, expected: Any):
         measure = GraphMeasures(load_graphml(graph_path))
@@ -92,7 +91,6 @@ class TestGraphProperties:
         (processed_roadnet_ca, 2),
         (processed_roadmap_pa, 2),
         (processed_usair97, 12)
-
     ], ids=ids)
     def test_avg_edge_count(self, graph_path: Path, expected: Any):
         measures = GraphMeasures(load_graphml(graph_path))
@@ -107,7 +105,6 @@ class TestGraphProperties:
         (processed_roadnet_ca, None),
         (processed_roadmap_pa, None),
         (processed_usair97, None)
-
     ], ids=ids)
     def test_avg_strength(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
@@ -202,7 +199,7 @@ class TestGraphProperties:
     ], ids=ids)
     def test_global_clustering_coefficient(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
-        assert isclose(measures.global_clustering_coefficient, expected, rel_tol=0.15)
+        assert isclose(measures.global_clustering_coefficient, expected, rel_tol=0.12)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, 0.396761),
@@ -213,7 +210,7 @@ class TestGraphProperties:
     ], ids=ids)
     def test_avg_clustering_coefficient(self, graph_path: Path, expected):
         measures = GraphMeasures(load_graphml(graph_path))
-        assert isclose(measures.avg_clustering_coefficient, expected, rel_tol=0.15)
+        assert isclose(measures.avg_clustering_coefficient, expected, rel_tol=0.12)
 
     @pytest.mark.parametrize('graph_path, expected', [
         (processed_openflights, 0.00706468),

@@ -15,6 +15,27 @@ from networkx import \
     number_strongly_connected_components, strongly_connected_components, weakly_connected_components
 from networkx import transitivity, average_clustering
 
+from networkx import all_pairs_shortest_path_length
+
+
+def global_efficiency_directional(graph: Union[DiGraph, Graph]):
+    # Identical to original, however without raising NetworkxNotImplementedError
+    # when passed directional graphs. No idea why original author blocked it
+    # even though it appears to work.
+    n = len(graph)
+    denom = n * (n - 1)
+    if denom != 0:
+        lengths = all_pairs_shortest_path_length(graph)
+        g_eff = 0
+        for source, targets in lengths:
+            for target, distance in targets.items():
+                if distance > 0:
+                    g_eff += 1 / distance
+        g_eff /= denom
+    else:
+        g_eff = 0
+    return g_eff
+
 
 class MeasureError(AttributeError):
     pass
@@ -23,8 +44,8 @@ class MeasureError(AttributeError):
 class GraphMeasures:
     def __init__(self, graph: Graph):
         self._graph = graph
-        self._directed = is_directed(self._graph)
-        self._weighted = is_weighted(self._graph)
+        self._directed = None
+        self._weighted = None
         self._connected = None
         self._weakly_connected = None
         self._strongly_connected = None
@@ -222,7 +243,10 @@ class GraphMeasures:
     @property
     def global_efficiency(self) -> float:
         if self._global_efficiency is None:
-            self._global_efficiency = global_efficiency(self.graph)
+            if self.directed:
+                self._global_efficiency = global_efficiency_directional(self.graph)
+            else:
+                self._global_efficiency = global_efficiency(self.graph)
 
         return self._global_efficiency
 
