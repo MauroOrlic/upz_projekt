@@ -1,0 +1,13 @@
+Modularnost	0.03875064820609163
+Svojstva zajednica
+Broj čvorova	Broj veza
+274	1998
+18	27
+14	22
+10	19
+6	8
+5	5
+2	1
+1	0
+1	0
+1	0

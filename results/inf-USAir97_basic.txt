@@ -1,0 +1,15 @@
+Tip	neusmjeren	težinski
+Broj vrhova	332
+Broj veza	2125
+Prosječan broj veza	12.801204819277109
+Prosječna snaga	0.07214494117647059
+Broj komponenti	1
+Veličina najveće komponente	332	2125
+Prosječna duljina najkraćeg puta	2.744094201579733
+Dijametar	6
+Ekscentričnost	6
+Globalna učinkovitost	0.405588517211036
+Prosječni koeficijent grupiranje	0.6217031929376033
+Asortativnost s obzirom na stupanj čvora	-0.20858787602317216
+Prosječna centralnost blizine	0.3754239358017845
+Prosječna međupoloženost	0.0052851339441810094

@@ -1,0 +1,14 @@
+Tip	neusmjeren	netežinski
+Broj vrhova	1957026
+Broj veza	2760387
+Prosječan broj veza	2.821001867118781
+Broj komponenti	1
+Veličina najveće komponente	1957026	2760387
+Prosječna duljina najkraćeg puta	N/A
+Dijametar	N/A
+Ekscentričnost	N/A
+Globalna učinkovitost	N/A
+Prosječni koeficijent grupiranje	0.04646838262370061
+Asortativnost s obzirom na stupanj čvora	0.1206380287938874
+Prosječna centralnost blizine	N/A
+Prosječna međupoloženost	N/A

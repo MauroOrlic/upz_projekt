@@ -1,0 +1,14 @@
+Tip	neusmjeren	netežinski
+Broj vrhova	4941
+Broj veza	6593
+Prosječan broj veza	2.6686905484719694
+Broj komponenti	1
+Veličina najveće komponente	4941	6593
+Prosječna duljina najkraćeg puta	18.989194273807446
+Dijametar	46
+Ekscentričnost	46
+Globalna učinkovitost	0.06287781085373491
+Prosječni koeficijent grupiranje	0.08010361108159714
+Asortativnost s obzirom na stupanj čvora	0.0034391173583457973
+Prosječna centralnost blizine	0.05367885643032579
+Prosječna međupoloženost	0.0036422746049417838

@@ -1,0 +1,14 @@
+Tip	usmjeren	netežinski
+Broj vrhova	2939
+Broj veza	30501	30501
+Prosječan broj veza	10.378019734603606	10.378019734603606
+Broj komponenti	52
+Veličina najveće komponente	2868	60808
+Prosječna duljina najkraćeg puta	4.092449372460325
+Dijametar	17
+Ekscentričnost	17
+Globalna učinkovitost	0.2554777420989565
+Prosječni koeficijent grupiranje	0.4379998485292385
+Asortativnost s obzirom na stupanj čvora	0.045925206142698495
+Prosječna centralnost blizine	0.239882432397057
+Prosječna međupoloženost	0.0010329290845794204

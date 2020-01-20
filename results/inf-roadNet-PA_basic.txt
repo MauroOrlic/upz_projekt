@@ -1,0 +1,14 @@
+Tip	neusmjeren	netežinski
+Broj vrhova	1087561
+Broj veza	1541513
+Prosječan broj veza	2.834807426893756
+Broj komponenti	1
+Veličina najveće komponente	1087561	1541513
+Prosječna duljina najkraćeg puta	N/A
+Dijametar	N/A
+Ekscentričnost	N/A
+Globalna učinkovitost	N/A
+Prosječni koeficijent grupiranje	0.04646307159156112
+Asortativnost s obzirom na stupanj čvora	0.12198872687112841
+Prosječna centralnost blizine	N/A
+Prosječna međupoloženost	N/A

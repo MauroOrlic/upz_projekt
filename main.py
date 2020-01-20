@@ -87,14 +87,21 @@ def write_modularity(measures: GraphMeasures, name: str):
     print(f"{datetime.now()} - Graph {name}: STARTED - modularity")
     results_modularity: Path = results / f"{name}_modularity.txt"
     with results_modularity.open('w') as file:
-        file.write(f"Modularnost\t{measures.modularity}\n")
-        file.write(f"Svojstva zajednica\n")
-        file.write(f"Broj čvorova\tBroj veza\n")
-        for c_measures in measures.top10_community_measures:
-            if measures.directed:
-                file.write(f"{c_measures.node_count}\t{sum(c_measures.edge_count)}\n")
-            else:
-                file.write(f"{c_measures.node_count}\t{c_measures.edge_count}\n")
+        try:
+            file.write(f"Modularnost\t{measures.modularity if measures.node_count < MAX_GRAPH_SIZE else UNAVAILABLE}\n")
+            file.write(f"Svojstva zajednica\n")
+            if measures.node_count > MAX_GRAPH_SIZE:
+                file.write("Greška: Preveliki graf.")
+                return
+            file.write(f"Broj čvorova\tBroj veza\n")
+            for c_measures in measures.top10_community_measures:
+                if measures.directed:
+                    file.write(f"{c_measures.node_count}\t{sum(c_measures.edge_count)}\n")
+                else:
+                    file.write(f"{c_measures.node_count}\t{c_measures.edge_count}\n")
+        except nx.algorithms.community.quality.NotAPartition:
+            print(f"{datetime.now()} - Graph {name}: FAILED - modularity")
+            file.write(f"FAILED")
     print(f"{datetime.now()} - Graph {name}: FINISHED - modularity")
 
 

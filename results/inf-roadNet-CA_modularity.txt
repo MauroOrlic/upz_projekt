@@ -1,0 +1,3 @@
+Modularnost	N/A
+Svojstva zajednica
+Greška: Preveliki graf.

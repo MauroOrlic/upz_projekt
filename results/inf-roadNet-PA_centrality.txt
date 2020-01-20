@@ -1,0 +1,12 @@
+Centralni čvorovi
+Stupnja	Međupoloženosti	Blizine
+672561	N/A	N/A
+757255	N/A	N/A
+845344	N/A	N/A
+856712	N/A	N/A
+68745	N/A	N/A
+95488	N/A	N/A
+207927	N/A	N/A
+385960	N/A	N/A
+402388	N/A	N/A
+477184	N/A	N/A
