@@ -21,3 +21,5 @@ processed_power = processed / f"{raw_power.stem}{suffix_graphml}"
 processed_roadnet_ca = processed / f"{raw_roadnet_ca.stem}{suffix_graphml}"
 processed_roadmap_pa = processed / f"{raw_roadnet_pa.stem}{suffix_graphml}"
 processed_usair97 = processed / f"{raw_usair97.stem}{suffix_graphml}"
+
+results = working_dir / 'results'

@@ -5,7 +5,7 @@ from statistics import mean
 from typing import Union, Tuple, Any, Dict
 
 from networkx import Graph, DiGraph
-from networkx import average_shortest_path_length, diameter, eccentricity
+from networkx import get_edge_attributes, average_shortest_path_length, diameter, eccentricity
 from networkx import closeness_centrality, betweenness_centrality, degree_centrality
 from networkx import degree_assortativity_coefficient
 from networkx import global_efficiency
@@ -14,6 +14,7 @@ from networkx import \
     number_connected_components, connected_components, \
     number_strongly_connected_components, strongly_connected_components, weakly_connected_components
 from networkx import transitivity, average_clustering
+from networkx.algorithms.community import girvan_newman, modularity
 
 from networkx import all_pairs_shortest_path_length
 
@@ -69,6 +70,9 @@ class GraphMeasures:
         self._top10_central_closeness = None
         self._avg_closeness_centrality = None
         self._avg_betweenness_centrality = None
+        self._top10_communities = None
+        self._modularity = None
+        self._top10_community_measures = None
 
     @property
     def graph(self) -> Union[Graph, DiGraph]:
@@ -130,7 +134,7 @@ class GraphMeasures:
     def edge_count(self) -> Union[int, Tuple[int, int]]:
         if self._edge_count is None:
             if self.directed:
-                self._edge_count = len(self.graph.in_edges)
+                self._edge_count = (len(self.graph.in_edges), len(self.graph.out_edges))
             else:
                 self._edge_count = self.graph.number_of_edges()
 
@@ -155,12 +159,14 @@ class GraphMeasures:
             if self.weighted:
                 if self.directed:
                     self._avg_strength = \
-                        (mean(degree for degree in dict(self.graph.in_degree(weight='weight')).values()),
-                         mean(degree for degree in dict(self.graph.out_degree(weight='weight')).values()))
+                        (mean(edge_in[2]['weight'] for edge_in in self.graph.in_edges().data()),
+                         (mean(edge_out[2]['weight'] for edge_out in self.graph.out_edges().data()))),
                 else:
-                    self._avg_strength = mean(degree for degree in dict(self.graph.degree(weight='weight')).values())
+                    self._avg_strength = mean(edge[2]['weight'] for edge in self.graph.edges().data())
+
             else:
                 raise MeasureError('Unweighted graphs cannot have strength.')
+
         return self._avg_strength
 
     @property
@@ -319,11 +325,41 @@ class GraphMeasures:
         return self._avg_closeness_centrality
 
     @property
-    def avg_betweenness_centrality(self):
+    def avg_betweenness_centrality(self) -> float:
         if self._avg_betweenness_centrality is None:
             self._avg_betweenness_centrality = mean([centrality for centrality in betweenness_centrality(self.graph).values()])
 
         return self._avg_betweenness_centrality
+
+    @property
+    def top10_communities(self) -> Tuple[Any, Any, Any, Any, Any, Any, Any, Any, Any, Any]:
+        if self._top10_communities is None:
+            generator = girvan_newman(self.graph)
+            communities = next(generator)
+            while len(communities) < 10:
+                communities = next(generator)
+            self._top10_communities = nlargest(10, communities, key=len)
+
+        return self._top10_communities
+
+    @property
+    def modularity(self) -> float:
+        if self._modularity is None:
+            if self.weighted:
+                self._modularity = modularity(self.graph, tuple(self.graph.subgraph(community) for community in self.top10_communities), weight='weight')
+            else:
+                self._modularity = modularity(self.graph, tuple(self.graph.subgraph(community) for community in self.top10_communities))
+
+        return self._modularity
+
+    @property
+    def top10_community_measures(self) -> Tuple['GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures', 'GraphMeasures']:
+        if self._top10_community_measures is None:
+            self._top10_community_measures = tuple(GraphMeasures(self.graph.subgraph(community)) for community in self.top10_communities)
+
+        return self._top10_community_measures
+
+
 
 
 

@@ -28,4 +28,3 @@ def load_graphml(path: Path) -> Graph:
     with path.open('r') as file:
         return read_graphml(file)
 
-
